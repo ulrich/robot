@@ -1,21 +1,19 @@
 package com.mappybot.simulator;
 
 import java.awt.Polygon;
-import java.awt.geom.Area;
 import java.util.Arrays;
 import java.util.List;
 
 import lombok.Value;
 
-import org.assertj.core.util.VisibleForTesting;
-
+import static com.mappybot.simulator.Geometry.*;
 import static java.lang.Math.*;
 
 @Value
 public class Board {
     public static final int WIDTH = 685;
     public static final int HEIGHT = 480;
-    private static final Polygon BOARD_SHAPE = new Polygon(new int[] { 0, 0, WIDTH, WIDTH }, new int[] { 0, HEIGHT, HEIGHT, 0 }, 4);
+    public static final Polygon BOARD_SHAPE = new Polygon(new int[] { 0, 0, WIDTH, WIDTH }, new int[] { 0, HEIGHT, HEIGHT, 0 }, 4);
     private final List<Robot> robots;
 
     public Board(Robot... robots) {
@@ -67,7 +65,7 @@ public class Board {
                     break;
             }
 
-            if (!insideBoard(robot) || collisionWithOtherRobot(robot)) {
+            if (!included(BOARD_SHAPE, getRobotShape(robot)) || collisionWithOtherRobot(robot)) {
                 System.out.println("COLLISION !" + robot);
                 robot.setX(previousX);
                 robot.setY(previousY);
@@ -78,34 +76,7 @@ public class Board {
     }
 
     private boolean collisionWithOtherRobot(Robot robot) {
-        return robots.stream().filter(r -> !robot.equals(r)).anyMatch(r -> {
-            boolean collision = intersect(getRobotShape(r), getRobotShape(robot));
-            if (collision) {
-                System.out.println("collision with " + r);
-            }
-            return collision;
-        });
-    }
-
-    @VisibleForTesting
-    static boolean insideBoard(Robot robot) {
-        return !included(BOARD_SHAPE, getRobotShape(robot));
-    }
-
-    @VisibleForTesting
-    static boolean included(Polygon p1, Polygon p2) {
-        Area s2 = new Area(p2);
-        Area intersection = new Area(p1);
-        intersection.intersect(s2);
-        return !intersection.equals(s2);
-    }
-
-    @VisibleForTesting
-    static boolean intersect(Polygon p1, Polygon p2) {
-        Area s2 = new Area(p2);
-        Area intersection = new Area(p1);
-        intersection.intersect(s2);
-        return !intersection.isEmpty();
+        return robots.stream().filter(r -> !robot.equals(r)).anyMatch(r -> intersect(getRobotShape(r), getRobotShape(robot)));
     }
 
     static Polygon getRobotShape(Robot robot) {
