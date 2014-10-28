@@ -1,4 +1,6 @@
-package com.mappybot.mappybot;
+package com.mappybot.simulator;
+
+import com.mappybot.embedded.Strategy;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,10 +10,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Robot {
+    public static final int WIDTH = 71;
+    public static final int HEIGHT = 58;
     private static final int STEP = 5;
-
-    private final int height = 58;
-    private final int width = 71;
     private int x;
     private int y;
     private double direction;

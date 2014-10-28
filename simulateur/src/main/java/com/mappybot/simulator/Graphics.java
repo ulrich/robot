@@ -1,4 +1,4 @@
-package com.mappybot.mappybot;
+package com.mappybot.simulator;
 
 import java.awt.Canvas;
 import java.awt.Dimension;
@@ -81,9 +81,8 @@ public class Graphics {
         image.getGraphics().drawImage(sourceImage, 0, 0, null);
         // g.drawImage(image, x, y, sourceImage.getWidth(), sourceImage.getHeight(), null);
         AffineTransform at = new AffineTransform();
-        at.translate(x + sourceImage.getWidth() / 2, y + sourceImage.getHeight() / 2);
+        at.translate(x, y);
         at.rotate(angle);
-        at.translate(-sourceImage.getWidth() / 2, -sourceImage.getHeight() / 2);
         g.drawImage(sourceImage, at, null);
     }
 }

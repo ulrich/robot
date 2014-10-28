@@ -1,4 +1,4 @@
-package com.mappybot.mappybot;
+package com.mappybot.simulator;
 
 import java.awt.Polygon;
 import java.awt.geom.Area;
@@ -13,8 +13,8 @@ import static java.lang.Math.*;
 
 @Value
 public class Board {
-    public static final int WIDTH = 620;
-    public static final int HEIGHT = 410;
+    public static final int WIDTH = 685;
+    public static final int HEIGHT = 480;
     private static final Polygon BOARD_SHAPE = new Polygon(new int[] { 0, 0, WIDTH, WIDTH }, new int[] { 0, HEIGHT, HEIGHT, 0 }, 4);
     private final List<Robot> robots;
 
@@ -67,30 +67,56 @@ public class Board {
                     break;
             }
 
-            Area boardArea = new Area(BOARD_SHAPE);
-            boardArea.intersect(new Area(getRobotShape(robot)));
-
-            if (robot.getX() < 0 || robot.getY() < 0 || robot.getY() > WIDTH || robot.getY() > HEIGHT) {
+            if (!insideBoard(robot) || collisionWithOtherRobot(robot)) {
                 System.out.println("COLLISION !" + robot);
                 robot.setX(previousX);
                 robot.setY(previousY);
             }
-
             if (robot.getDirection() > PI) robot.setDirection(robot.getDirection() - 2 * PI);
             if (robot.getDirection() < -PI) robot.setDirection(robot.getDirection() + 2 * PI);
         }
     }
 
+    private boolean collisionWithOtherRobot(Robot robot) {
+        return robots.stream().filter(r -> !robot.equals(r)).anyMatch(r -> {
+            boolean collision = intersect(getRobotShape(r), getRobotShape(robot));
+            if (collision) {
+                System.out.println("collision with " + r);
+            }
+            return collision;
+        });
+    }
+
     @VisibleForTesting
+    static boolean insideBoard(Robot robot) {
+        return !included(BOARD_SHAPE, getRobotShape(robot));
+    }
+
+    @VisibleForTesting
+    static boolean included(Polygon p1, Polygon p2) {
+        Area s2 = new Area(p2);
+        Area intersection = new Area(p1);
+        intersection.intersect(s2);
+        return !intersection.equals(s2);
+    }
+
+    @VisibleForTesting
+    static boolean intersect(Polygon p1, Polygon p2) {
+        Area s2 = new Area(p2);
+        Area intersection = new Area(p1);
+        intersection.intersect(s2);
+        return !intersection.isEmpty();
+    }
+
     static Polygon getRobotShape(Robot robot) {
-        int x2 = (int) Math.round(robot.getX() + robot.getWidth() * cos(robot.getDirection()));
-        int y2 = (int) Math.round(robot.getY() + robot.getWidth() * sin(robot.getDirection()));
+        int x2 = (int) Math.round(robot.getX() + Robot.WIDTH * cos(robot.getDirection()));
+        int y2 = (int) Math.round(robot.getY() + Robot.WIDTH * sin(robot.getDirection()));
 
-        int x3 = (int) Math.round(x2 + robot.getHeight() * sin(robot.getDirection()));
-        int y3 = (int) Math.round(y2 + robot.getHeight() * cos(robot.getDirection()));
+        int x3 = (int) Math.round(x2 - Robot.HEIGHT * sin(robot.getDirection()));
+        int y3 = (int) Math.round(y2 + Robot.HEIGHT * cos(robot.getDirection()));
 
-        int x4 = (int) Math.round(robot.getX() + robot.getHeight() * sin(robot.getDirection()));
-        int y4 = (int) Math.round(robot.getY() + robot.getHeight() * cos(robot.getDirection()));
+        int x4 = (int) Math.round(robot.getX() - Robot.HEIGHT * sin(robot.getDirection()));
+        int y4 = (int) Math.round(robot.getY() + Robot.HEIGHT * cos(robot.getDirection()));
         return new Polygon(new int[] { robot.getX(), x2, x3, x4 }, new int[] { robot.getY(), y2, y3, y4 }, 4);
     }
 }

@@ -1,4 +1,6 @@
-package com.mappybot.mappybot;
+package com.mappybot.simulator;
+
+import com.mappybot.embedded.Strategy;
 
 import java.awt.Polygon;
 import java.awt.Rectangle;
@@ -7,7 +9,7 @@ import java.awt.geom.Area;
 
 import org.junit.Test;
 
-import static com.mappybot.mappybot.Board.*;
+import static com.mappybot.simulator.Board.*;
 import static java.lang.Math.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -86,23 +88,35 @@ public class BoardTest {
     }
 
     @Test
-    public void should_check_if_robot_is_inside_board() throws Exception {
-        Shape p2 = new Polygon(new int[] { 0, 8, 8, 0 }, new int[] { 0, 0, 8, 8 }, 4);
-        Area board = new Area(new Rectangle(0, 0, WIDTH, HEIGHT));
-        Area a2 = new Area(p2);
-        board.intersect(a2);
-
-        assertThat(board).isEqualTo(a2);
-    }
-
-    @Test
-    public void should_get_robot_Area() throws Exception {
+    public void should_get_robot_Shape() throws Exception {
         Polygon robotArea = getRobotShape(new Robot(0, 0, 0, null));
         assertThat(robotArea.xpoints).isEqualTo(new int[] { 0, 71, 71, 0 });
         assertThat(robotArea.ypoints).isEqualTo(new int[] { 0, 0, 58, 58 });
 
         Polygon robotArea2 = getRobotShape(new Robot(100, 10, PI / 2, null));
-        assertThat(robotArea2.xpoints).isEqualTo(new int[] { 100, 100, 158, 158 });
+        assertThat(robotArea2.xpoints).isEqualTo(new int[] { 100, 100, 42, 42 });
         assertThat(robotArea2.ypoints).isEqualTo(new int[] { 10, 81, 81, 10 });
+
+        Polygon robotArea3 = getRobotShape(new Robot(100, 10, PI / 4, null));
+        assertThat(robotArea3.xpoints).isEqualTo(new int[] { 100, 150, 109, 59 });
+        assertThat(robotArea3.ypoints).isEqualTo(new int[] { 10, 60, 101, 51 });
+    }
+
+    @Test
+    public void should_detect_robot_collision() throws Exception {
+        assertThat(intersect(getRobotShape(new Robot(0, 0, 0, null)), getRobotShape(new Robot(Robot.WIDTH, 10, 0, null)))).isFalse();
+        assertThat(intersect(getRobotShape(new Robot(0, 0, 0, null)), getRobotShape(new Robot(Robot.WIDTH - 1, 10, 0, null)))).isTrue();
+        assertThat(intersect(getRobotShape(new Robot(0, 0, 0, null)), getRobotShape(new Robot(Robot.WIDTH * 2 - 1, 10, PI, null)))).isTrue();
+        assertThat(intersect(getRobotShape(new Robot(0, 0, 0, null)), getRobotShape(new Robot(Robot.WIDTH * 2, 10, PI, null)))).isFalse();
+    }
+
+    @Test
+    public void should_detect_inside_board() throws Exception {
+        assertThat(Board.insideBoard(new Robot(0, 0, 0.0, null))).isTrue();
+        assertThat(Board.insideBoard(new Robot(0, Board.HEIGHT - Robot.HEIGHT, 0.0, null))).isTrue();
+        assertThat(Board.insideBoard(new Robot(0, Board.HEIGHT - Robot.HEIGHT + 1, 0.0, null))).isFalse();
+        assertThat(Board.insideBoard(new Robot(Board.WIDTH - Robot.WIDTH, 0, 0.0, null))).isTrue();
+        assertThat(Board.insideBoard(new Robot(Board.WIDTH - Robot.WIDTH + 1, 0, 0.0, null))).isFalse();
+        assertThat(Board.insideBoard(new Robot(Board.WIDTH - Robot.WIDTH, Board.HEIGHT - Robot.HEIGHT, PI / 4, null))).isFalse();
     }
 }

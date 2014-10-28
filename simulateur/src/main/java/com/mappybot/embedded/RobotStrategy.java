@@ -1,9 +1,9 @@
-package com.mappybot.mappybot;
+package com.mappybot.embedded;
 
-import static com.mappybot.mappybot.Action.*;
+import static com.mappybot.embedded.Strategy.Action.*;
 
-final class RobotStrategy implements Strategy {
-    private static final int LIMIT = -1;
+public class RobotStrategy implements Strategy {
+    private static final int LIMIT = 100;
     private Action turn = RIGHT;
     private double distance;
     private double previousDistance;
@@ -22,7 +22,7 @@ final class RobotStrategy implements Strategy {
     @Override
     public Action getAction() {
         if (distance < LIMIT) {
-            return turn;
+            return RIGHT;
         }
         previousDistance = 0;
         distance = 0;
